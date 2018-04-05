@@ -61,7 +61,11 @@ console.log("damage: "+calculate_damage({
 
 
 function attack_name(attack) {
-	return attack.class+"___"+attack.weapon+"___"+attack.attack
+	return attack.class+"_"+attack.weapon+"_"+attack.attack+"_"+attack.targets
+}
+
+function JSONreadable(s) {
+	return s.replace("},","},\n")
 }
 
 function body_breakpoints(output) {
@@ -88,7 +92,7 @@ function body_breakpoints(output) {
 		})
 	}
 	
-	fs.writeFileSync(output,JSON.stringify(breakpoints))
+	fs.writeFileSync(output,JSONreadable(JSON.stringify(breakpoints)))
 }
 
 body_breakpoints("body.json")
