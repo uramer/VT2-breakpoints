@@ -61,25 +61,82 @@ console.log("damage: "+calculate_damage({
 
 
 function attack_name(attack) {
-	return attack.class+"_"+attack.weapon+"_"+attack.attack+"_"+attack.targets
+	return attack.class+"_"+attack.weapon+"___"+attack.attack+"___"+attack.targets
 }
 
 function JSONreadable(s) {
 	return s.replace("},","},\n")
 }
 
-function body_breakpoints(output) {
-	let breakpoints = {}
-	let stats = {
-		skaven: 0,
-		chaos: 0,
-		armor: [0,0,0,0,0,0],
-		crit: 0,
-		crit_power: 0,
-		headshot: 0,
-		backstab: 0,
-		boost: 0
+function breakpoints_to_csv(breakpoints,output) {
+	let s = ""
+	s = "weapon,attack,targets,"
+	breed.forEach((x)=>{
+		s+=x.name+","
+	})
+	s+="\n"
+	
+	for(var x in breakpoints) {
+		x.split("___").forEach((t) => {
+			s+=t+","
+		})
+		breed.forEach((t)=>{
+			s+=breakpoints[x][t.name]+","
+		})
+		s+="\n"
 	}
+	
+	if(output) fs.writeFileSync(output,s)
+	return s
+}
+
+function round_to_2(x) {
+	return x.toFixed(2)
+}
+let body_stats = {
+	skaven: 0,
+	chaos: 0,
+	armor: [0,0,0,0,0,0],
+	crit: 0,
+	crit_power: 0,
+	headshot: 0,
+	backstab: 0,
+	boost: 0
+}
+let head_stats = {
+	skaven: 0,
+	chaos: 0,
+	armor: [0,0,0,0,0,0],
+	crit: 0,
+	crit_power: 0,
+	headshot: 1,
+	backstab: 0,
+	boost: 0
+}
+
+let crit_stats = {
+	skaven: 0,
+	chaos: 0,
+	armor: [0,0,0,0,0,0],
+	crit: 1,
+	crit_power: 0,
+	headshot: 0,
+	backstab: 0,
+	boost: 0
+}
+let crit_head_stats = {
+	skaven: 0,
+	chaos: 0,
+	armor: [0,0,0,0,0,0],
+	crit: 1,
+	crit_power: 0,
+	headshot: 1,
+	backstab: 0,
+	boost: 0
+}
+
+function breakpoints(stats,output) {
+	let breakpoints = {}
 
 	for(var x in attack) {
 		var s = attack_name(attack[x])
@@ -88,11 +145,16 @@ function body_breakpoints(output) {
 			let d = calculate_damage(stats,attack[x],br)
 			let hits = Math.ceil(br.hp/d) - 1
 			if(d==0 || hits == 0) breakpoints[s][br.name] = 0
-			else breakpoints[s][br.name] = br.hp/(hits*d) - 1
+			else breakpoints[s][br.name] = round_to_2(br.hp/(hits*d) - 1)
 		})
 	}
 	
 	fs.writeFileSync(output,JSONreadable(JSON.stringify(breakpoints)))
+	
+	return breakpoints
 }
 
-body_breakpoints("body.json")
+breakpoints_to_csv(breakpoints(body_stats,"body.json"),"body.csv")
+breakpoints_to_csv(breakpoints(head_stats,"head.json"),"head.csv")
+breakpoints_to_csv(breakpoints(crit_stats,"crit.json"),"crit.csv")
+breakpoints_to_csv(breakpoints(crit_head_stats,"crit_head.json"),"crit_head.csv")
