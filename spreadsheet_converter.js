@@ -22,6 +22,8 @@
 	boost: [1.75,1.6,1.5,1.5,1.3]
 }*/
 
+var live_to_beta = 575/800
+
 var fs = require('fs')
 
 function parse_breed(input,output) {
@@ -45,6 +47,10 @@ function parse_breed(input,output) {
 
 parse_breed("./Vermintide 2 Breed Data - 1.0.4.csv","./breed.json")
 
+function power_scale(base,scale) {
+	return (base+scale*60)*575/800
+}
+
 function parse_attacks(input,output) {
 	var s = fs.readFileSync(input,'utf8')
 	let ls = s.split("\r\n")
@@ -63,8 +69,8 @@ function parse_attacks(input,output) {
 			weapon: last_weapon,
 			attack: last_attack,
 			targets: t[6],
-			cleave: parseFloat(t[4])+60*parseFloat(t[5]),
-			damage: parseFloat(t[7])+60*parseFloat(t[8]),
+			cleave: power_scale(parseFloat(t[4]),parseFloat(t[5])),
+			damage: power_scale(parseFloat(t[7]),parseFloat(t[8])),
 			multiplier: [t[9],t[10],t[11],t[12],t[13],t[14]],
 			multiplier_crit: [t[15],t[16],t[17],t[18],t[19],t[20]],
 			crit: t[21],
